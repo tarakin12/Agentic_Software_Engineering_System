@@ -1,0 +1,136 @@
+{
+  "links": [
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-001",
+      "task_id": "TASK-005",
+      "artifacts": [
+        "generated/url_shortener/app/services/url_service.py",
+        "generated/url_shortener/app/api/urls.py"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/test_api.py::test_create_url_valid_returns_201"
+      ],
+      "validation_id": "VAL-001",
+      "recorded_at": "2026-09-22T18:31:08.424988+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-002",
+      "task_id": "TASK-005",
+      "artifacts": [
+        "generated/url_shortener/app/models/url.py"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/test_api.py::test_create_url_invalid_returns_422"
+      ],
+      "validation_id": "VAL-002",
+      "recorded_at": "2026-09-22T18:31:08.548781+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-003",
+      "task_id": "TASK-005",
+      "artifacts": [
+        "generated/url_shortener/app/services/url_service.py"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/test_url_service.py::test_create_short_url_is_idempotent_for_same_url",
+        "generated/url_shortener/tests/test_api.py::test_create_url_duplicate_returns_200_same_code"
+      ],
+      "validation_id": "VAL-003",
+      "recorded_at": "2026-09-22T18:31:08.684928+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-004",
+      "task_id": "TASK-006",
+      "artifacts": [
+        "generated/url_shortener/app/api/redirect.py"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/test_api.py::test_redirect_known_code_returns_302"
+      ],
+      "validation_id": "VAL-004",
+      "recorded_at": "2026-09-22T18:31:08.795821+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-005",
+      "task_id": "TASK-006",
+      "artifacts": [
+        "generated/url_shortener/app/services/url_service.py"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/test_api.py::test_redirect_unknown_code_returns_404"
+      ],
+      "validation_id": "VAL-005",
+      "recorded_at": "2026-09-22T18:31:08.905460+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-006",
+      "task_id": "TASK-006",
+      "artifacts": [
+        "generated/url_shortener/app/services/url_service.py"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/test_api.py::test_redirect_expired_code_returns_410"
+      ],
+      "validation_id": "VAL-006",
+      "recorded_at": "2026-09-22T18:31:09.024042+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-007",
+      "task_id": "TASK-007",
+      "artifacts": [
+        "generated/url_shortener/app/analytics/analytics_service.py"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/test_api.py::test_analytics_reflects_redirect_count"
+      ],
+      "validation_id": "VAL-007",
+      "recorded_at": "2026-09-22T18:31:09.155560+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-008",
+      "task_id": "TASK-007",
+      "artifacts": [
+        "generated/url_shortener/app/repositories/analytics_repository.py"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/test_api.py::test_persistence_across_new_connection"
+      ],
+      "validation_id": "VAL-008",
+      "recorded_at": "2026-09-22T18:31:09.297396+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-009",
+      "task_id": "TASK-005",
+      "artifacts": [
+        "generated/url_shortener/app"
+      ],
+      "tests": [
+        "N/A-structural"
+      ],
+      "validation_id": "VAL-009",
+      "recorded_at": "2026-09-22T18:31:09.402775+00:00"
+    },
+    {
+      "requirement_id": "REQ-URL-SHORTENER",
+      "acceptance_criterion_id": "AC-010",
+      "task_id": "TASK-008",
+      "artifacts": [
+        ".agentic/validation/test-results.json"
+      ],
+      "tests": [
+        "generated/url_shortener/tests/"
+      ],
+      "validation_id": "VAL-010",
+      "recorded_at": "2026-09-22T18:31:09.516396+00:00"
+    }
+  ]
+}

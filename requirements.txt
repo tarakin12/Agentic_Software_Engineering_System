@@ -1,0 +1,12 @@
+# Agentic Software Engineering System — Python dependencies
+#
+# No external LLM API client is required or used anywhere in this project.
+# These dependencies support:
+#   - the generated URL shortener prototype (FastAPI + SQLite)
+#   - test execution (pytest, httpx for FastAPI TestClient)
+
+fastapi>=0.110
+uvicorn>=0.29
+pytest>=8.0
+httpx>=0.27
+

@@ -1,0 +1,39 @@
+{
+  "requirement": "Build a better URL platform.",
+  "material_ambiguity": true,
+  "proposed_assumptions_if_forced_to_proceed": [
+    {
+      "id": "PROPOSED-ASM-001",
+      "area": "business objective",
+      "proposed_default": "Interpret 'better' as: add custom short-domain support, richer analytics dashboards, and improved redirect latency versus a baseline unspecified prior system.",
+      "risk_if_wrong": "HIGH — could build entirely the wrong feature set (e.g., requester actually wanted monetization/billing features, not analytics)."
+    },
+    {
+      "id": "PROPOSED-ASM-002",
+      "area": "users",
+      "proposed_default": "Multi-tenant, public-facing SaaS-style product.",
+      "risk_if_wrong": "HIGH — single-tenant internal tool would need a completely different auth/isolation model."
+    },
+    {
+      "id": "PROPOSED-ASM-003",
+      "area": "scale",
+      "proposed_default": "Design for ~1M URLs and ~10M redirects/month.",
+      "risk_if_wrong": "MEDIUM-HIGH — under-building for a billion-scale need, or over-engineering for a 500-user internal tool, are both costly mistakes."
+    },
+    {
+      "id": "PROPOSED-ASM-004",
+      "area": "authentication",
+      "proposed_default": "API-key based auth for URL creation; public redirects.",
+      "risk_if_wrong": "MEDIUM — reworking auth later touches every layer."
+    },
+    {
+      "id": "PROPOSED-ASM-005",
+      "area": "compliance",
+      "proposed_default": "No specific regulatory compliance (e.g., GDPR deletion workflows) implemented initially.",
+      "risk_if_wrong": "HIGH — retrofitting compliance (e.g., right-to-erasure) after launch is significantly more expensive than designing for it upfront."
+    }
+  ],
+  "recommendation": "DO NOT PROCEED to architecture using these proposed assumptions. They are presented only to make the risk of proceeding concrete and visible. Human clarification on at least business objective, users, and compliance is required before this requirement can be responsibly normalized.",
+  "workflow_action": "HALT — awaiting human answers to clarification-questions.md or explicit approval of the proposed assumptions above before any architecture work begins."
+}
+

@@ -1,0 +1,215 @@
+openapi: 3.0.3
+info:
+  title: URL Shortener Service
+  description: >
+    Prototype URL shortener API: create short URLs, redirect visitors to the
+    original URL, and retrieve basic usage analytics. See
+    .agentic/artifacts/architecture.md for the full architecture and
+    production-evolution notes.
+  version: "1.0.0"
+servers:
+  - url: http://localhost:8000
+paths:
+  /:
+    get:
+      summary: Landing/info endpoint (not part of the core API contract)
+      operationId: root
+      description: >
+        Returns basic service info and links (e.g. /docs). Provided purely
+        for evaluator convenience so that GET / does not return a bare 404;
+        this is not one of the three core acceptance-criteria endpoints.
+      responses:
+        '200':
+          description: Basic service info
+  /urls:
+    post:
+      summary: Create a short URL
+      operationId: createShortUrl
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUrlRequest'
+      responses:
+        '201':
+          description: Short URL created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUrlResponse'
+        '200':
+          description: >
+            An active (non-expired) mapping for this original_url already
+            exists; the existing short_code is returned (idempotent
+            creation, ASM-005 / AC-003).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUrlResponse'
+        '422':
+          description: Invalid or malformed URL (AC-002)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /{short_code}:
+    get:
+      summary: Redirect to the original URL
+      operationId: redirectToOriginalUrl
+      parameters:
+        - name: short_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '302':
+          description: Redirect to the original URL (AC-004)
+        '404':
+          description: Unknown short code (AC-005)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '410':
+          description: Short code exists but has expired (AC-006)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /urls/{short_code}/analytics:
+    get:
+      summary: Retrieve analytics for a short URL
+      operationId: getUrlAnalytics
+      parameters:
+        - name: short_code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Analytics for the short URL (AC-007)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponse'
+        '404':
+          description: Unknown short code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /analytics/dashboard:
+    get:
+      summary: Retrieve aggregate analytics dashboard summary (read-only)
+      operationId: getAnalyticsDashboard
+      description: >
+        Composes existing urls + redirect_events data into totals, a top-N
+        ranking, a clicks-over-time series, and recent events. Introduces
+        no new storage or analytics engine. Powers the static dashboard UI
+        served at GET /dashboard/.
+      parameters:
+        - name: top
+          in: query
+          required: false
+          schema: { type: integer, default: 5 }
+        - name: recent
+          in: query
+          required: false
+          schema: { type: integer, default: 10 }
+        - name: days
+          in: query
+          required: false
+          schema: { type: integer, default: 7 }
+      responses:
+        '200':
+          description: Aggregate analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummaryResponse'
+components:
+  schemas:
+    CreateUrlRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          format: uri
+          example: "https://example.com/some/very/long/path"
+    CreateUrlResponse:
+      type: object
+      required: [short_code, short_url]
+      properties:
+        short_code:
+          type: string
+          example: "abc123x"
+        short_url:
+          type: string
+          example: "/abc123x"
+    AnalyticsResponse:
+      type: object
+      required: [short_code, original_url, created_at, redirect_count]
+      properties:
+        short_code:
+          type: string
+        original_url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        redirect_count:
+          type: integer
+        last_accessed_at:
+          type: string
+          format: date-time
+          nullable: true
+    ErrorResponse:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+    TopUrlItem:
+      type: object
+      required: [short_code, original_url, redirect_count]
+      properties:
+        short_code: { type: string }
+        original_url: { type: string }
+        redirect_count: { type: integer }
+        last_accessed_at: { type: string, format: date-time, nullable: true }
+    ClicksOverTimePoint:
+      type: object
+      required: [date, count]
+      properties:
+        date: { type: string, example: "2026-09-23" }
+        count: { type: integer }
+    RecentEventItem:
+      type: object
+      required: [short_code, original_url, accessed_at]
+      properties:
+        short_code: { type: string }
+        original_url: { type: string }
+        accessed_at: { type: string, format: date-time }
+    DashboardSummaryResponse:
+      type: object
+      required: [total_urls, total_redirects, top_urls, clicks_over_time, recent_events]
+      properties:
+        total_urls: { type: integer }
+        total_redirects: { type: integer }
+        top_urls:
+          type: array
+          items: { $ref: '#/components/schemas/TopUrlItem' }
+        clicks_over_time:
+          type: array
+          items: { $ref: '#/components/schemas/ClicksOverTimePoint' }
+        recent_events:
+          type: array
+          items: { $ref: '#/components/schemas/RecentEventItem' }
+
+
+
+

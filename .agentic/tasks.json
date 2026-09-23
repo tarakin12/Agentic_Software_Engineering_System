@@ -1,0 +1,262 @@
+[
+  {
+    "task_id": "TASK-001",
+    "title": "Requirement Analysis",
+    "description": "Analyze the raw requirement, classify EXPLICIT/INFERRED/ASSUMED/UNKNOWN information, detect ambiguity, and produce a normalized requirement with testable acceptance criteria.",
+    "assigned_agent": "requirement-analyst",
+    "dependencies": [],
+    "status": "COMPLETED",
+    "inputs": [
+      "original requirement text"
+    ],
+    "outputs": [
+      ".agentic/context/normalized-requirement.json",
+      ".agentic/context/requirement-analysis.md"
+    ],
+    "validation_criteria": [
+      "every explicit requirement represented",
+      "assumptions labeled, not silently required",
+      "acceptance criteria are testable"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-002",
+    "title": "Architecture Design",
+    "description": "Design the component architecture, request/data flow, persistence design, and production evolution path for the URL shortener prototype.",
+    "assigned_agent": "architecture-designer",
+    "dependencies": [
+      "TASK-001"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      ".agentic/context/normalized-requirement.json"
+    ],
+    "outputs": [
+      ".agentic/artifacts/architecture.md"
+    ],
+    "validation_criteria": [
+      "architecture satisfies every functional/non-functional requirement",
+      "APIs align with acceptance criteria",
+      "no unnecessary infrastructure introduced"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-003",
+    "title": "API Contract",
+    "description": "Author artifacts/openapi.yaml describing POST /urls, GET /{short_code}, GET /urls/{short_code}/analytics exactly as designed in architecture.md.",
+    "assigned_agent": "code-engineer",
+    "dependencies": [
+      "TASK-002"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      ".agentic/artifacts/architecture.md"
+    ],
+    "outputs": [
+      "artifacts/openapi.yaml"
+    ],
+    "validation_criteria": [
+      "every route in architecture.md's API Boundaries table is present",
+      "request/response schemas match models to be implemented in TASK-005/006/007"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-004",
+    "title": "Database Schema",
+    "description": "Author artifacts/schema.sql defining the urls and redirect_events tables with the indexes justified in architecture.md.",
+    "assigned_agent": "code-engineer",
+    "dependencies": [
+      "TASK-002"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      ".agentic/artifacts/architecture.md"
+    ],
+    "outputs": [
+      "artifacts/schema.sql"
+    ],
+    "validation_criteria": [
+      "urls table supports short_code, original_url, created_at, expires_at, redirect_count, last_accessed_at",
+      "redirect_events table supports per-event history",
+      "indexes match architecture.md rationale"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-005",
+    "title": "URL Creation Service",
+    "description": "Implement models/repositories/services for idempotent short-URL creation (AC-001, AC-002, AC-003) plus the POST /urls API route.",
+    "assigned_agent": "code-engineer",
+    "dependencies": [
+      "TASK-003",
+      "TASK-004"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      "artifacts/openapi.yaml",
+      "artifacts/schema.sql",
+      ".agentic/artifacts/architecture.md"
+    ],
+    "outputs": [
+      "generated/url_shortener/app/models/url.py",
+      "generated/url_shortener/app/repositories/url_repository.py",
+      "generated/url_shortener/app/services/url_service.py",
+      "generated/url_shortener/app/api/urls.py"
+    ],
+    "validation_criteria": [
+      "AC-001",
+      "AC-002",
+      "AC-003"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-006",
+    "title": "Redirect Service",
+    "description": "Implement redirect resolution (AC-004, AC-005, AC-006) including expiration checks, plus the GET /{short_code} API route.",
+    "assigned_agent": "code-engineer",
+    "dependencies": [
+      "TASK-003",
+      "TASK-004"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      "artifacts/openapi.yaml",
+      "artifacts/schema.sql",
+      ".agentic/artifacts/architecture.md"
+    ],
+    "outputs": [
+      "generated/url_shortener/app/api/redirect.py",
+      "generated/url_shortener/app/services/url_service.py"
+    ],
+    "validation_criteria": [
+      "AC-004",
+      "AC-005",
+      "AC-006"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-007",
+    "title": "Analytics Component",
+    "description": "Implement redirect-event recording and aggregate analytics retrieval (AC-007, AC-008) plus GET /urls/{short_code}/analytics API route.",
+    "assigned_agent": "code-engineer",
+    "dependencies": [
+      "TASK-004"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      "artifacts/schema.sql",
+      ".agentic/artifacts/architecture.md"
+    ],
+    "outputs": [
+      "generated/url_shortener/app/analytics/analytics_service.py",
+      "generated/url_shortener/app/repositories/analytics_repository.py",
+      "generated/url_shortener/app/api/urls.py"
+    ],
+    "validation_criteria": [
+      "AC-007",
+      "AC-008"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-008",
+    "title": "Unit Tests",
+    "description": "Write unit tests for url_service, url_repository, analytics_service covering happy paths, invalid input, boundary conditions.",
+    "assigned_agent": "test-engineer",
+    "dependencies": [
+      "TASK-005",
+      "TASK-006",
+      "TASK-007"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      "generated/url_shortener/app/"
+    ],
+    "outputs": [
+      "generated/url_shortener/tests/test_url_service.py",
+      "generated/url_shortener/tests/test_analytics_service.py"
+    ],
+    "validation_criteria": [
+      "tests actually execute via python -m pytest",
+      "AC-001..AC-003, AC-006..AC-008 covered at unit level"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-009",
+    "title": "Integration / API Tests",
+    "description": "Write API-level tests using FastAPI TestClient covering full request/response cycles, persistence across calls, and failure paths.",
+    "assigned_agent": "test-engineer",
+    "dependencies": [
+      "TASK-005",
+      "TASK-006",
+      "TASK-007"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      "generated/url_shortener/app/"
+    ],
+    "outputs": [
+      "generated/url_shortener/tests/test_api.py"
+    ],
+    "validation_criteria": [
+      "tests actually execute via python -m pytest",
+      "AC-001..AC-010 covered end-to-end where applicable"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-010",
+    "title": "Documentation",
+    "description": "Produce API documentation and setup/testing instructions consistent with the actual implementation.",
+    "assigned_agent": "documentation-engineer",
+    "dependencies": [
+      "TASK-008",
+      "TASK-009"
+    ],
+    "status": "COMPLETED",
+    "inputs": [
+      "generated/url_shortener/app/",
+      "artifacts/openapi.yaml",
+      ".agentic/validation/test-results.json"
+    ],
+    "outputs": [
+      "README.md (URL shortener section)",
+      "docs/url-shortener.md"
+    ],
+    "validation_criteria": [
+      "documentation matches actual implemented behavior, no fabricated endpoints"
+    ],
+    "retry_count": 0
+  },
+  {
+    "task_id": "TASK-011",
+    "title": "Independent Validation",
+    "description": "Independently review requirement coverage, architecture consistency, API/schema consistency, test results, security and scalability risk, and documentation accuracy.",
+    "assigned_agent": "validation-engineer",
+    "dependencies": [
+      "TASK-010"
+    ],
+    "status": "APPROVED",
+    "inputs": [
+      ".agentic/context/normalized-requirement.json",
+      ".agentic/artifacts/architecture.md",
+      "artifacts/openapi.yaml",
+      "artifacts/schema.sql",
+      "generated/url_shortener/",
+      ".agentic/validation/test-results.json"
+    ],
+    "outputs": [
+      ".agentic/validation/validation-report.md"
+    ],
+    "validation_criteria": [
+      "final status is one of PASS / PASS_WITH_WARNINGS / FAIL / NEEDS_HUMAN_REVIEW, backed by evidence"
+    ],
+    "retry_count": 0
+  }
+]

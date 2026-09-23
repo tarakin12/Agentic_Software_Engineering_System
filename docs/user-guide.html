@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Software Engineering System — User Guide</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #161a23;
+    --panel-2: #1d2230;
+    --text: #e6e9f0;
+    --muted: #9aa4b8;
+    --accent: #6ea8fe;
+    --accent-2: #4ade80;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --border: #2a3040;
+    --code-bg: #0b0e14;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .layout { display: flex; min-height: 100vh; }
+  nav {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  nav h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 20px 0 8px; }
+  nav h2:first-child { margin-top: 0; }
+  nav a {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  nav a:hover { background: var(--panel-2); color: var(--accent); }
+  main { flex: 1; padding: 40px 56px; max-width: 980px; }
+  header.hero {
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  header.hero h1 { font-size: 32px; margin: 0 0 8px; }
+  header.hero p.subtitle { color: var(--muted); font-size: 17px; margin: 0; }
+  .badges { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge.green { background: rgba(74,222,128,.15); color: var(--accent-2); border: 1px solid rgba(74,222,128,.35); }
+  .badge.blue { background: rgba(110,168,254,.15); color: var(--accent); border: 1px solid rgba(110,168,254,.35); }
+  .badge.gray { background: rgba(154,164,184,.15); color: var(--muted); border: 1px solid var(--border); }
+
+  section { margin-bottom: 48px; scroll-margin-top: 24px; }
+  section h2 {
+    font-size: 22px;
+    border-left: 4px solid var(--accent);
+    padding-left: 12px;
+    margin-bottom: 16px;
+  }
+  section h3 { font-size: 17px; color: var(--accent); margin: 24px 0 8px; }
+  p { color: var(--text); }
+  ul, ol { padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .feature {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .feature .icon { font-size: 20px; }
+  .feature h4 { margin: 6px 0 4px; font-size: 14px; }
+  .feature p { margin: 0; font-size: 13px; color: var(--muted); }
+
+  code, pre {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 13.5px;
+  }
+  code.inline {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--accent-2);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    position: relative;
+  }
+  pre .comment { color: var(--muted); }
+  .prompt-box {
+    background: linear-gradient(135deg, rgba(110,168,254,.12), rgba(74,222,128,.06));
+    border: 1px solid rgba(110,168,254,.4);
+    border-radius: 8px;
+    padding: 16px 18px;
+    font-style: italic;
+    margin: 12px 0;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: .05em; }
+  tr:hover { background: rgba(255,255,255,.02); }
+
+  .steps { counter-reset: step; list-style: none; padding-left: 0; }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 44px;
+    margin-bottom: 18px;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0; top: 0;
+    width: 30px; height: 30px;
+    background: var(--accent);
+    color: #0b0e14;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+
+  .callout {
+    border-left: 4px solid var(--warn);
+    background: rgba(251,191,36,.08);
+    padding: 12px 16px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .callout.danger { border-left-color: var(--danger); background: rgba(248,113,113,.08); }
+  .callout.success { border-left-color: var(--accent-2); background: rgba(74,222,128,.08); }
+
+  .flow {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    font-family: monospace;
+    font-size: 13px;
+    white-space: pre;
+    overflow-x: auto;
+    color: var(--muted);
+  }
+  .flow .stage { color: var(--accent); font-weight: bold; }
+
+  footer {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    margin-top: 60px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    nav { width: 100%; height: auto; position: relative; }
+    main { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav>
+  <h2>Overview</h2>
+  <a href="#intro">What This Is</a>
+  <a href="#features">Key Features</a>
+  <a href="#status">Current Status</a>
+
+  <h2>Setup</h2>
+  <a href="#prerequisites">Prerequisites</a>
+  <a href="#install">Installation</a>
+
+  <h2>Running It</h2>
+  <a href="#copilot-setup">Enable Copilot Agent Mode</a>
+  <a href="#run-urlshortener">Run: URL Shortener</a>
+  <a href="#run-other">Run: Other Use Cases</a>
+  <a href="#run-app">Run the Generated App</a>
+  <a href="#dashboard">Analytics Dashboard</a>
+
+  <h2>Understanding Output</h2>
+  <a href="#stages">Orchestration Stages</a>
+  <a href="#artifacts">Where Artifacts Land</a>
+  <a href="#approval">Approval Gates</a>
+
+  <h2>Verification</h2>
+  <a href="#testing">Testing</a>
+  <a href="#examples">Example Scenarios</a>
+
+  <h2>Reference</h2>
+  <a href="#structure">Repository Structure</a>
+  <a href="#troubleshooting">Troubleshooting</a>
+  <a href="#faq">FAQ</a>
+</nav>
+
+<main>
+
+<header class="hero" id="intro">
+  <h1>Agentic Software Engineering System</h1>
+  <p class="subtitle">A user's guide to running a genuine agentic software-engineering workflow — from natural-language requirement to reviewable engineering outcome — using GitHub Copilot Agent mode.</p>
+  <div class="badges">
+    <span class="badge green">No external LLM API</span>
+    <span class="badge green">No API key required</span>
+    <span class="badge blue">Python 3.11+</span>
+    <span class="badge blue">GitHub Copilot Agent Mode</span>
+    <span class="badge gray">FastAPI + SQLite prototype</span>
+  </div>
+</header>
+
+<section id="features">
+  <h2>Key Features</h2>
+  <div class="grid">
+    <div class="feature"><div class="icon">🧭</div><h4>Single Entry Point</h4><p>You only ever talk to the Engineering Orchestrator — it delegates to 7 specialized agent roles internally.</p></div>
+    <div class="feature"><div class="icon">❓</div><h4>Ambiguity Detection</h4><p>Material ambiguity halts the workflow and asks clarifying questions instead of guessing.</p></div>
+    <div class="feature"><div class="icon">🗂️</div><h4>Artifact-Driven Handoff</h4><p>Every stage persists real files (<code class="inline">.agentic/</code>) — no reliance on chat memory alone.</p></div>
+    <div class="feature"><div class="icon">🔀</div><h4>Dependency-Aware Task Graph</h4><p>Independent tasks are identified and can run in parallel; blocked tasks wait correctly.</p></div>
+    <div class="feature"><div class="icon">🏚️</div><h4>Brownfield Reasoning</h4><p>Inspects existing repositories before proposing any change — never assumes impact.</p></div>
+    <div class="feature"><div class="icon">✅</div><h4>Independent Validation</h4><p>A separate Validation Engineer role cross-checks everything with mechanical evidence, not opinion.</p></div>
+    <div class="feature"><div class="icon">♻️</div><h4>Bounded Recovery</h4><p>Failures trigger scoped rework (max 2 retries) — never silent infinite loops.</p></div>
+    <div class="feature"><div class="icon">🖐️</div><h4>Human Approval Gate</h4><p><code class="inline">approval.json</code> is never auto-set to APPROVED — a human must explicitly approve.</p></div>
+    <div class="feature"><div class="icon">🔗</div><h4>Full Traceability</h4><p>Requirement → Acceptance Criterion → Task → Artifact → Test → Validation, all linked.</p></div>
+    <div class="feature"><div class="icon">📊</div><h4>Analytics Dashboard</h4><p>A read-only dashboard UI composes the existing analytics data (totals, top URLs, clicks over time, recent events) — no new database or analytics engine.</p></div>
+  </div>
+</section>
+
+<section id="status">
+  <h2>Current Status of This Repository</h2>
+  <div class="card">
+    <p>The mandatory URL shortener scenario has already been run <strong>end to end and approved</strong>:</p>
+    <ul>
+      <li><code class="inline">.agentic/workflow.json</code> → <code class="inline">current_stage: "COMPLETE"</code></li>
+      <li><code class="inline">.agentic/approval.json</code> → <code class="inline">status: "APPROVED"</code></li>
+      <li>82 tests passing across 3 independent suites (URL shortener incl. the analytics dashboard, brownfield sample, framework tools)</li>
+    </ul>
+    <p>Brownfield and ambiguous-requirement scenarios have also been demonstrated for real under <code class="inline">examples/</code>. You can inspect all of this without running anything — or run a brand-new requirement yourself to see the system work live.</p>
+  </div>
+</section>
+
+<section id="prerequisites">
+  <h2>Prerequisites</h2>
+  <table>
+    <tr><th>Requirement</th><th>Notes</th></tr>
+    <tr><td>VS Code</td><td>Latest version recommended</td></tr>
+    <tr><td>GitHub Copilot</td><td>Enabled, with Agent mode available</td></tr>
+    <tr><td>A capable model</td><td>Claude Sonnet or another capable Copilot model selected</td></tr>
+    <tr><td>Python 3.11+</td><td>Used for the generated app and framework tools</td></tr>
+    <tr><td>Git</td><td>To clone/manage the repository</td></tr>
+  </table>
+  <div class="callout success">
+    <strong>Not needed:</strong> API keys, Docker, Kubernetes, cloud accounts, external databases, or any separately hosted agent platform.
+  </div>
+</section>
+
+<section id="install">
+  <h2>Installation</h2>
+  <ol class="steps">
+    <li>Clone the repository and open it in VS Code.</li>
+    <li>Install Python dependencies:
+      <pre>pip install -r requirements.txt</pre>
+    </li>
+    <li>(Optional) Confirm everything currently in the repo already works:
+      <pre>python .agentic/tools/run_tests.py<span class="comment"> # expect 82 passed, 0 failed</span></pre>
+    </li>
+  </ol>
+</section>
+
+<section id="copilot-setup">
+  <h2>Enabling GitHub Copilot Agent Mode</h2>
+  <ol class="steps">
+    <li>Open the Copilot panel in VS Code.</li>
+    <li>Select <strong>Agent mode</strong> (not plain Chat / Ask mode).</li>
+    <li>Choose <strong>Claude Sonnet</strong> or another capable model from the model picker.</li>
+    <li>Confirm the workspace is this repository — the orchestrator reads <code class="inline">.github/copilot-instructions.md</code> and <code class="inline">.github/agents/*.agent.md</code> automatically as repository-level instructions.</li>
+  </ol>
+</section>
+
+<section id="run-urlshortener">
+  <h2>Running the Mandatory Scenario (URL Shortener)</h2>
+  <p>This has already been executed and approved in this repository, but here is exactly how to (re)run it yourself:</p>
+  <ol class="steps">
+    <li>In Copilot Agent mode chat, type:
+      <div class="prompt-box">"Use the Engineering Orchestrator to process this requirement: Build a scalable URL shortener service with APIs, persistence and analytics."</div>
+    </li>
+    <li>The orchestrator inspects the repo, determines this is <strong>greenfield</strong>, and begins Requirement Analysis.</li>
+    <li>Watch for ambiguity handling — five ambiguities exist (scale target, auth, expiration, analytics depth, duplicates) but are judged <em>non-material</em>, so the workflow proceeds with clearly labeled assumptions rather than halting.</li>
+    <li>Progress is reported stage by stage (see <a href="#stages">Orchestration Stages</a> below).</li>
+    <li>When it reaches Human Approval, review <code class="inline">.agentic/validation/validation-report.md</code> and <code class="inline">artifacts/engineering-summary.md</code>, then respond with your decision (approve or request rework).</li>
+  </ol>
+  <div class="callout">
+    You do not need to manually invoke the Requirement Analyst, Architecture Designer, etc. — the orchestrator delegates to them internally and only surfaces what you need to review or approve.
+  </div>
+</section>
+
+<section id="run-other">
+  <h2>Running Other Use Cases (Proving Genericity)</h2>
+  <p>The same orchestrator and agent files work for arbitrary requirements — nothing is hardcoded to URL shortening. Try any of the following:</p>
+  <table>
+    <tr><th>Type</th><th>Example Prompt</th><th>Expected Behavior</th></tr>
+    <tr>
+      <td>Greenfield, unrelated domain</td>
+      <td><em>"Build a CLI tool that reads a CSV of expenses and reports monthly totals by category."</em></td>
+      <td>Full pipeline runs; architecture has no API/DB layers since none were needed.</td>
+    </tr>
+    <tr>
+      <td>Brownfield</td>
+      <td><em>"Reduce the response time of the /search endpoint without changing its API."</em></td>
+      <td>Repository is inspected first; minimal targeted fix proposed, not a rewrite.</td>
+    </tr>
+    <tr>
+      <td>Bug fix</td>
+      <td><em>"Fix the off-by-one error causing the last page of results to be dropped."</em></td>
+      <td>Root-cause focused; small task graph, not a full re-architecture.</td>
+    </tr>
+    <tr>
+      <td>Ambiguous</td>
+      <td><em>"Make the reporting system better."</em></td>
+      <td>Workflow <strong>halts</strong>, produces clarifying questions + proposed assumptions, and waits for you.</td>
+    </tr>
+  </table>
+  <div class="callout success">
+    <strong>Already proven in this repo:</strong> see <code class="inline">examples/brownfield/</code> (real 2.3x measured performance fix) and <code class="inline">examples/ambiguous/</code> (real halt-for-clarification) — both executed for real, not just described.
+  </div>
+</section>
+
+<section id="run-app">
+  <h2>Running the Generated URL Shortener App</h2>
+  <pre>cd generated/url_shortener
+python -m uvicorn app.main:app --reload</pre>
+  <p>Then open <code class="inline">http://127.0.0.1:8000/</code> (landing info), <code class="inline">/docs</code> (interactive API docs), <code class="inline">/dashboard/</code> (analytics dashboard UI), and try:</p>
+  <pre><span class="comment"># Create a short URL</span>
+curl -X POST http://127.0.0.1:8000/urls -H "Content-Type: application/json" -d "{\"url\": \"https://example.com\"}"
+
+<span class="comment"># Redirect (use the short_code from the response above)</span>
+curl -i http://127.0.0.1:8000/&lt;short_code&gt;
+
+<span class="comment"># Analytics for one short code</span>
+curl http://127.0.0.1:8000/urls/&lt;short_code&gt;/analytics
+
+<span class="comment"># Aggregate analytics dashboard summary (new)</span>
+curl http://127.0.0.1:8000/analytics/dashboard</pre>
+</section>
+
+<section id="dashboard">
+  <h2>Analytics Dashboard</h2>
+  <p>A lightweight, read-only dashboard UI was added on top of the existing analytics data — no new database, no new analytics engine, and no changes to the original three API endpoints.</p>
+  <div class="grid">
+    <div class="feature"><div class="icon">🧮</div><h4>Total URLs Created</h4><p>Count of all short URLs, from the existing <code class="inline">urls</code> table.</p></div>
+    <div class="feature"><div class="icon">🖱️</div><h4>Total Redirects / Clicks</h4><p>Sum of <code class="inline">redirect_count</code> across all URLs.</p></div>
+    <div class="feature"><div class="icon">🏆</div><h4>Top Accessed Short URLs</h4><p>Ranked by redirect count, limited via <code class="inline">?top=</code>.</p></div>
+    <div class="feature"><div class="icon">📈</div><h4>Clicks Over Time</h4><p>Daily bucketed counts from the existing <code class="inline">redirect_events</code> table.</p></div>
+    <div class="feature"><div class="icon">🕒</div><h4>Recent Analytics Events</h4><p>Most recent redirects, joined with their original URL.</p></div>
+  </div>
+  <h3>Where It Lives</h3>
+  <table>
+    <tr><th>Piece</th><th>Location</th></tr>
+    <tr><td>Aggregate API (new)</td><td><code class="inline">GET /analytics/dashboard</code> — <code class="inline">generated/url_shortener/app/api/dashboard.py</code></td></tr>
+    <tr><td>Dashboard UI (new)</td><td><code class="inline">GET /dashboard/</code> — static HTML/CSS/JS at <code class="inline">generated/url_shortener/app/static/dashboard/index.html</code></td></tr>
+    <tr><td>Aggregation logic (new)</td><td><code class="inline">AnalyticsService.get_dashboard_summary()</code> — composes existing repository reads, no duplicated business logic</td></tr>
+    <tr><td>Contract</td><td><code class="inline">artifacts/openapi.yaml</code> (<code class="inline">DashboardSummaryResponse</code> schema) — verified with 0 mismatches against the implementation</td></tr>
+    <tr><td>Tests</td><td><code class="inline">generated/url_shortener/tests/test_dashboard_api.py</code> (6 tests) + 2 unit tests in <code class="inline">test_analytics_service.py</code></td></tr>
+  </table>
+  <div class="callout success">
+    <strong>Original contract unchanged:</strong> <code class="inline">POST /urls</code>, <code class="inline">GET /{short_code}</code>, and <code class="inline">GET /urls/{short_code}/analytics</code> behave exactly as before. The dashboard only adds a new, read-only, additive endpoint plus a static UI that consumes it.
+  </div>
+  <div class="callout">
+    Loading, empty-data, and API-error states are all handled client-side in <code class="inline">index.html</code> — try it with a fresh/empty database to see the empty state, or stop the server while the page is open to see the error banner.
+  </div>
+</section>
+
+
+<section id="stages">
+  <h2>Orchestration Stages You'll See</h2>
+  <div class="flow"><span class="stage">[1/7] Requirement Analysis</span>  → normalized-requirement.json
+<span class="stage">[2/7] Architecture</span>          → architecture.md (validated before proceeding)
+<span class="stage">[3/7] Task Planning</span>         → tasks.json (dependency graph)
+<span class="stage">[4/7] Engineering Implementation</span> → generated/ (parallel tasks where possible)
+<span class="stage">[5/7] Testing</span>               → real pytest execution, evidence saved
+<span class="stage">[6/7] Validation</span>            → validation-report.md (independent review)
+<span class="stage">[7/7] Human Approval</span>        → approval.json (PENDING until you decide)</div>
+  <p>If validation fails, expect: <em>root cause → scoped rework task → re-execute only the affected task and its dependents → re-validate</em>, capped at 2 automatic retries before requesting human review.</p>
+</section>
+
+<section id="artifacts">
+  <h2>Where to Find Everything</h2>
+  <table>
+    <tr><th>Artifact</th><th>Location</th></tr>
+    <tr><td>Normalized requirement</td><td><code class="inline">.agentic/context/normalized-requirement.json</code></td></tr>
+    <tr><td>Architecture</td><td><code class="inline">.agentic/artifacts/architecture.md</code></td></tr>
+    <tr><td>Task graph</td><td><code class="inline">.agentic/tasks.json</code></td></tr>
+    <tr><td>Generated code</td><td><code class="inline">generated/&lt;project&gt;/</code></td></tr>
+    <tr><td>Test evidence</td><td><code class="inline">.agentic/validation/test-results.json</code> / <code class="inline">.md</code></td></tr>
+    <tr><td>Validation report</td><td><code class="inline">.agentic/validation/validation-report.md</code></td></tr>
+    <tr><td>Traceability</td><td><code class="inline">.agentic/traceability.json</code></td></tr>
+    <tr><td>Approval status</td><td><code class="inline">.agentic/approval.json</code></td></tr>
+    <tr><td>Final summary</td><td><code class="inline">artifacts/engineering-summary.md</code></td></tr>
+  </table>
+</section>
+
+<section id="approval">
+  <h2>Approval Gates — When You'll Be Asked to Decide</h2>
+  <ul>
+    <li>Material requirement ambiguity (business objective, users, compliance undefined)</li>
+    <li>A high-risk architectural decision</li>
+    <li>Any potentially destructive repository change</li>
+    <li>Automatic recovery exceeding 2 retries</li>
+    <li>Final engineering approval, always</li>
+  </ul>
+  <div class="callout">You will <strong>not</strong> be asked to approve every trivial step — only these controlled-autonomy checkpoints.</div>
+</section>
+
+<section id="testing">
+  <h2>Testing</h2>
+  <pre><span class="comment"># Whole repository (recommended)</span>
+python .agentic/tools/run_tests.py
+
+<span class="comment"># Individually</span>
+python -m pytest generated/url_shortener/tests
+python -m pytest examples/brownfield/sample-url-service/tests
+python -m pytest tests/   <span class="comment"># framework's own tools</span></pre>
+  <table>
+    <tr><th>Suite</th><th>Count</th><th>Purpose</th></tr>
+    <tr><td>URL shortener</td><td>31</td><td>Unit + API/integration tests for the mandatory scenario, including the analytics dashboard (8 tests)</td></tr>
+    <tr><td>Brownfield sample</td><td>4</td><td>Contract compatibility + measured performance improvement</td></tr>
+    <tr><td>Framework tools</td><td>47</td><td>Tests the deterministic tools themselves, isolated from live state</td></tr>
+    <tr><td><strong>Total</strong></td><td><strong>82</strong></td><td>All passing</td></tr>
+  </table>
+</section>
+
+<section id="examples">
+  <h2>Example Scenarios Already in This Repo</h2>
+  <table>
+    <tr><th>Folder</th><th>What It Shows</th></tr>
+    <tr><td><code class="inline">examples/greenfield/</code></td><td>Write-up of the completed, approved URL shortener run</td></tr>
+    <tr><td><code class="inline">examples/brownfield/</code></td><td>A genuinely naive pre-existing app, inspected, fixed (2.3x measured speedup), contract preserved</td></tr>
+    <tr><td><code class="inline">examples/ambiguous/</code></td><td>A materially ambiguous requirement that correctly halts instead of guessing</td></tr>
+  </table>
+</section>
+
+<section id="structure">
+  <h2>Repository Structure</h2>
+  <pre>.github/
+  copilot-instructions.md      <span class="comment"># global rules</span>
+  agents/*.agent.md             <span class="comment"># 8 agent role definitions</span>
+.agentic/
+  workflow.json, tasks.json, approval.json, traceability.json
+  context/, artifacts/, validation/, logs/
+  tools/*.py                    <span class="comment"># deterministic bookkeeping tools</span>
+artifacts/                      <span class="comment"># openapi.yaml, schema.sql, engineering-summary.md</span>
+generated/url_shortener/        <span class="comment"># mandatory scenario implementation + analytics dashboard (app/api/dashboard.py, app/static/dashboard/)</span>
+examples/                       <span class="comment"># greenfield / brownfield / ambiguous</span>
+docs/                           <span class="comment"># API + setup docs</span>
+tests/                          <span class="comment"># framework's own test suite</span>
+requirements.txt, README.md</pre>
+</section>
+
+<section id="troubleshooting">
+  <h2>Troubleshooting</h2>
+  <div class="card">
+    <h3>"Not Found" at http://127.0.0.1:8000/</h3>
+    <p>Fixed — a landing route now returns service info at the root path. If you still see this, confirm you're running the latest <code class="inline">generated/url_shortener/app/main.py</code> and restart uvicorn.</p>
+  </div>
+  <div class="card">
+    <h3>pytest not found</h3>
+    <p>Run <code class="inline">pip install -r requirements.txt</code> first.</p>
+  </div>
+  <div class="card">
+    <h3>Tests fail when run together but pass individually</h3>
+    <p>This was a real issue we hit and fixed: two projects used a module named <code class="inline">app</code>, causing a Python import cache collision. Already resolved via unique <code class="inline">importlib</code> loading in the brownfield tests — should not recur.</p>
+  </div>
+</section>
+
+<section id="faq">
+  <h2>FAQ</h2>
+  <div class="card">
+    <h3>Does this call OpenAI/Anthropic/Azure OpenAI APIs?</h3>
+    <p>No. GitHub Copilot Agent mode itself is the reasoning engine. All Python tools in <code class="inline">.agentic/tools/</code> are dependency-free, deterministic bookkeeping — no network calls, no LLM SDKs.</p>
+  </div>
+  <div class="card">
+    <h3>Do I need an API key?</h3>
+    <p>No — GitHub Copilot handles model access; this repository requires none of its own.</p>
+  </div>
+  <div class="card">
+    <h3>Is the URL shortener hardcoded into the orchestrator?</h3>
+    <p>No. The agent definitions contain no URL-shortener-specific logic (verified: zero occurrences of "url"/"short_code" in <code class="inline">.agentic/tools/*.py</code>). It is the mandatory demonstration scenario, not a special case.</p>
+  </div>
+  <div class="card">
+    <h3>What if I disagree with the validation result?</h3>
+    <p>You control the approval gate. Respond with a rework request instead of approving, and the orchestrator will create a scoped rework task rather than restarting everything.</p>
+  </div>
+  <div class="card">
+    <h3>Does the analytics dashboard change the existing API contract?</h3>
+    <p>No. It adds one new, additive, read-only endpoint (<code class="inline">GET /analytics/dashboard</code>) that composes data already produced by the existing <code class="inline">urls</code> and <code class="inline">redirect_events</code> tables. <code class="inline">POST /urls</code>, <code class="inline">GET /{short_code}</code>, and <code class="inline">GET /urls/{short_code}/analytics</code> are unchanged — verified mechanically with <code class="inline">validate_artifacts.py openapi</code> (0 mismatches).</p>
+  </div>
+  <div class="card">
+    <h3>Does the dashboard use a new database or charting library?</h3>
+    <p>No. It reads from the same SQLite tables (<code class="inline">urls</code>, <code class="inline">redirect_events</code>) via the existing repository layer, and the UI is a single static HTML/CSS/JS file with a small CSS-only bar chart — no new dependency, no build step.</p>
+  </div>
+</section>
+
+<footer>
+  Agentic Software Engineering System — interview prototype. No external LLM API. No API key. GitHub Copilot Agent mode is the reasoning engine.
+</footer>
+
+</main>
+</div>
+</body>
+</html>
+
+
+
+
+
+
+
+

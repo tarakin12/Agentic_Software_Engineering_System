@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>URL Shortener — Analytics Dashboard</title>
+<style>
+  /* Same dark-theme palette as docs/user-guide.html for visual consistency */
+  :root {
+    --bg: #0f1117; --panel: #161a23; --panel-2: #1d2230;
+    --text: #e6e9f0; --muted: #9aa4b8; --accent: #6ea8fe;
+    --accent-2: #4ade80; --warn: #fbbf24; --danger: #f87171;
+    --border: #2a3040; --code-bg: #0b0e14;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6; padding: 32px 40px;
+  }
+  header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px; }
+  header h1 { font-size: 24px; margin: 0; }
+  header .meta { color: var(--muted); font-size: 13px; }
+  button {
+    background: var(--accent); color: #0b0e14; border: none; border-radius: 6px;
+    padding: 8px 16px; font-weight: 600; cursor: pointer; font-size: 13px;
+  }
+  button:hover { opacity: .9; }
+  .banner {
+    display: none; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 14px;
+  }
+  .banner.error { display: block; background: rgba(248,113,113,.1); border: 1px solid var(--danger); color: var(--danger); }
+  .banner.loading { display: block; background: rgba(110,168,254,.1); border: 1px solid var(--accent); color: var(--accent); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px;
+  }
+  .card .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
+  .card .value { font-size: 32px; font-weight: 700; margin-top: 6px; }
+  section.panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px 24px; margin-bottom: 24px;
+  }
+  section.panel h2 { font-size: 16px; margin: 0 0 14px; border-left: 3px solid var(--accent); padding-left: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+  .empty { color: var(--muted); font-size: 13.5px; padding: 12px 0; }
+  .chart { display: flex; align-items: flex-end; gap: 10px; height: 140px; padding-top: 10px; }
+  .chart .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; justify-content: flex-end; height: 100%; }
+  .chart .bar { width: 100%; background: var(--accent); border-radius: 4px 4px 0 0; min-height: 2px; }
+  .chart .bar-label { font-size: 11px; color: var(--muted); }
+  .chart .bar-count { font-size: 11px; color: var(--text); }
+  code { background: var(--code-bg); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; color: var(--accent-2); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 URL Shortener — Analytics Dashboard</h1>
+    <div class="meta">Live data from <code>GET /analytics/dashboard</code> · last updated: <span id="lastUpdated">—</span></div>
+  </div>
+  <button id="refreshBtn">Refresh</button>
+</header>
+
+<div id="loadingBanner" class="banner loading">Loading dashboard data…</div>
+<div id="errorBanner" class="banner error"></div>
+
+<div class="cards">
+  <div class="card"><div class="label">Total URLs Created</div><div class="value" id="totalUrls">—</div></div>
+  <div class="card"><div class="label">Total Redirects / Clicks</div><div class="value" id="totalRedirects">—</div></div>
+</div>
+
+<section class="panel" id="topUrlsSection">
+  <h2>Top Accessed Short URLs</h2>
+  <div id="topUrlsContent"></div>
+</section>
+
+<section class="panel" id="clicksSection">
+  <h2>Clicks / Redirects Over Time</h2>
+  <div id="clicksContent"></div>
+</section>
+
+<section class="panel" id="recentSection">
+  <h2>Recent Analytics Events</h2>
+  <div id="recentContent"></div>
+</section>
+
+<script>
+/*
+  Modular dashboard client. To add a new analytics card later:
+    1. Add a new <section class="panel"> block above.
+    2. Write a render function following the pattern below.
+    3. Register it in the WIDGETS array.
+  Every widget receives the same DashboardSummaryResponse JSON body from
+  the single existing endpoint — no per-widget API calls, no new backend.
+*/
+
+const ENDPOINT = "/analytics/dashboard"; // the ONLY API endpoint this dashboard calls
+
+function setLoading(isLoading) {
+  document.getElementById("loadingBanner").style.display = isLoading ? "block" : "none";
+}
+
+function showError(message) {
+  const el = document.getElementById("errorBanner");
+  el.textContent = "⚠ " + message;
+  el.style.display = "block";
+}
+
+function clearError() {
+  document.getElementById("errorBanner").style.display = "none";
+}
+
+function escapeHtml(value) {
+  const div = document.createElement("div");
+  div.textContent = String(value);
+  return div.innerHTML;
+}
+
+function renderSummaryCards(data) {
+  document.getElementById("totalUrls").textContent = data.total_urls;
+  document.getElementById("totalRedirects").textContent = data.total_redirects;
+}
+
+function renderTopUrls(data) {
+  const el = document.getElementById("topUrlsContent");
+  if (!data.top_urls || data.top_urls.length === 0) {
+    el.innerHTML = '<div class="empty">No URLs have been created yet.</div>';
+    return;
+  }
+  const rows = data.top_urls.map(u => `
+    <tr>
+      <td><code>${escapeHtml(u.short_code)}</code></td>
+      <td>${escapeHtml(u.original_url)}</td>
+      <td>${escapeHtml(u.redirect_count)}</td>
+      <td>${escapeHtml(u.last_accessed_at ?? "—")}</td>
+    </tr>`).join("");
+  el.innerHTML = `
+    <table>
+      <thead><tr><th>Short Code</th><th>Original URL</th><th>Redirects</th><th>Last Accessed</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderClicksOverTime(data) {
+  const el = document.getElementById("clicksContent");
+  if (!data.clicks_over_time || data.clicks_over_time.length === 0) {
+    el.innerHTML = '<div class="empty">No redirect activity recorded yet.</div>';
+    return;
+  }
+  const max = Math.max(...data.clicks_over_time.map(p => p.count), 1);
+  const bars = data.clicks_over_time.map(p => `
+    <div class="bar-wrap">
+      <div class="bar-count">${escapeHtml(p.count)}</div>
+      <div class="bar" style="height:${Math.max((p.count / max) * 100, 4)}%"></div>
+      <div class="bar-label">${escapeHtml(p.date)}</div>
+    </div>`).join("");
+  el.innerHTML = `<div class="chart">${bars}</div>`;
+}
+
+function renderRecentEvents(data) {
+  const el = document.getElementById("recentContent");
+  if (!data.recent_events || data.recent_events.length === 0) {
+    el.innerHTML = '<div class="empty">No redirects have happened yet.</div>';
+    return;
+  }
+  const rows = data.recent_events.map(e => `
+    <tr>
+      <td><code>${escapeHtml(e.short_code)}</code></td>
+      <td>${escapeHtml(e.original_url)}</td>
+      <td>${escapeHtml(e.accessed_at)}</td>
+    </tr>`).join("");
+  el.innerHTML = `
+    <table>
+      <thead><tr><th>Short Code</th><th>Original URL</th><th>Accessed At</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// Widget registry — add new entries here as future analytics cards are built.
+const WIDGETS = [renderSummaryCards, renderTopUrls, renderClicksOverTime, renderRecentEvents];
+
+async function loadDashboard() {
+  setLoading(true);
+  clearError();
+  try {
+    const resp = await fetch(ENDPOINT + "?top=5&recent=10&days=7");
+    if (!resp.ok) {
+      throw new Error(`API returned HTTP ${resp.status}`);
+    }
+    const data = await resp.json();
+    WIDGETS.forEach(renderFn => renderFn(data));
+    document.getElementById("lastUpdated").textContent = new Date().toLocaleTimeString();
+  } catch (err) {
+    showError("Could not load dashboard data: " + err.message);
+  } finally {
+    setLoading(false);
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", loadDashboard);
+loadDashboard();
+setInterval(loadDashboard, 20000); // light auto-refresh for the demo
+</script>
+
+</body>
+</html>
+

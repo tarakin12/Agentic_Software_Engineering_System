@@ -1,0 +1,59 @@
+{
+  "intent": "EXPLICIT: Provide a service that converts long URLs into short, shareable codes, redirects visitors from the short code to the original URL, persists all mappings durably, and records/report usage analytics for each short URL. INFERRED: The system must be architected so it could realistically evolve toward higher-scale production deployment, not just work as a one-off script.",
+  "functional_requirements": [
+    { "id": "FR-001", "label": "EXPLICIT", "text": "Provide an API to create a short URL from a given original URL." },
+    { "id": "FR-002", "label": "EXPLICIT", "text": "Provide a mechanism to redirect a client from a short code to the original URL." },
+    { "id": "FR-003", "label": "EXPLICIT", "text": "Provide analytics about short URL usage (at minimum redirect/usage counts)." },
+    { "id": "FR-004", "label": "EXPLICIT", "text": "Persist URL mappings so they survive process restarts." },
+    { "id": "FR-005", "label": "INFERRED", "text": "Reject or reject-with-error invalid input URLs rather than silently accepting them." },
+    { "id": "FR-006", "label": "INFERRED", "text": "Return a clear error for unknown/nonexistent short codes." },
+    { "id": "FR-007", "label": "ASSUMED", "text": "Resubmitting the same original URL should not create unbounded duplicate rows; the existing mapping should be returned instead (idempotent creation)." },
+    { "id": "FR-008", "label": "ASSUMED", "text": "Short URLs may optionally expire; expired short codes must not redirect successfully." }
+  ],
+  "non_functional_requirements": [
+    { "id": "NFR-001", "label": "EXPLICIT", "text": "The service must be 'scalable' — the requirement explicitly uses this word." },
+    { "id": "NFR-002", "label": "INFERRED", "text": "The service must be maintainable: layered code (API / business logic / persistence / analytics), not a single monolithic file." },
+    { "id": "NFR-003", "label": "INFERRED", "text": "The service must be testable end-to-end (unit, integration, API, failure-path tests)." },
+    { "id": "NFR-004", "label": "ASSUMED", "text": "For this prototype, single-node SQLite persistence is acceptable; true horizontal scalability is a documented future-evolution concern, not a prototype requirement." },
+    { "id": "NFR-005", "label": "ASSUMED", "text": "No authentication/authorization is required for the prototype (public-style URL shortener), since none was requested." }
+  ],
+  "constraints": [
+    { "id": "C-001", "label": "EXPLICIT", "text": "Must run on Python 3.11+, FastAPI, SQLite, pytest per repository-level project constraints." },
+    { "id": "C-002", "label": "EXPLICIT", "text": "No Docker, Kubernetes, cloud infrastructure, external database, or external LLM/API may be used." },
+    { "id": "C-003", "label": "EXPLICIT", "text": "Implementation must remain small/maintainable, consistent with a ~20 hour interview-prototype scope." }
+  ],
+  "dependencies": [
+    { "id": "DEP-001", "text": "None — this is a greenfield build with no existing repository to integrate with." }
+  ],
+  "ambiguities": [
+    { "id": "AMB-001", "area": "scale target", "text": "No concrete numeric scale target (requests/sec, users, data volume) was provided for 'scalable'." },
+    { "id": "AMB-002", "area": "authentication", "text": "Whether URL creation should be restricted to authenticated users was not specified." },
+    { "id": "AMB-003", "area": "expiration policy", "text": "Whether short URLs expire by default, and after how long, was not specified." },
+    { "id": "AMB-004", "area": "analytics depth", "text": "Whether analytics should include only aggregate counts or per-request details (IP, user agent, referrer) was not specified." },
+    { "id": "AMB-005", "area": "duplicate handling", "text": "Behavior when the same original URL is submitted twice was not specified." }
+  ],
+  "assumptions": [
+    { "id": "ASM-001", "ambiguity_ref": "AMB-001", "text": "Treat 'scalable' as an architectural-evolution requirement: the prototype must be stateless-service-shaped and documented with a clear path to load-balanced/horizontally-scaled deployment, rather than requiring a specific throughput to be benchmarked in this prototype." },
+    { "id": "ASM-002", "ambiguity_ref": "AMB-002", "text": "No authentication is implemented in the prototype; this is called out as a known limitation and future evolution item." },
+    { "id": "ASM-003", "ambiguity_ref": "AMB-003", "text": "Expiration is optional per-URL (nullable field), not enforced by default; if set, redirect returns 410 Gone once expired." },
+    { "id": "ASM-004", "ambiguity_ref": "AMB-004", "text": "Analytics are limited to aggregate redirect_count, created_at, and last_accessed_at, plus a per-redirect event log (timestamp only) for basic trend analysis. No IP/user-agent capture, to avoid unnecessary privacy/security surface in the prototype." },
+    { "id": "ASM-005", "ambiguity_ref": "AMB-005", "text": "Resubmitting an identical, non-expired original URL returns the existing short_code (HTTP 200) instead of creating a duplicate row." }
+  ],
+  "unknowns": [
+    { "id": "UNK-001", "text": "Whether short codes must be human-readable/pronounceable or purely random is not specified; random base62 codes are used as a reasonable default." },
+    { "id": "UNK-002", "text": "Long-term analytics retention policy is not specified; no automatic pruning is implemented in the prototype." }
+  ],
+  "acceptance_criteria": [
+    { "id": "AC-001", "text": "POST /urls with a valid http(s) URL returns 201 with a unique short_code and short_url." },
+    { "id": "AC-002", "text": "POST /urls with a malformed or non-http/https URL returns 422 with an error detail." },
+    { "id": "AC-003", "text": "POST /urls with an original_url that already has an active mapping returns 200 with the existing short_code (idempotent), not a new row." },
+    { "id": "AC-004", "text": "GET /{short_code} returns a redirect (302) to the original URL when the code exists and is not expired." },
+    { "id": "AC-005", "text": "GET /{short_code} returns 404 for an unknown short code." },
+    { "id": "AC-006", "text": "GET /{short_code} returns 410 for a short code that exists but has expired." },
+    { "id": "AC-007", "text": "GET /urls/{short_code}/analytics returns short_code, original_url, created_at, redirect_count, and last_accessed_at for a known code, and 404 for an unknown code." },
+    { "id": "AC-008", "text": "Each successful redirect persists an increment to redirect_count and updates last_accessed_at durably (verified by restarting the process/reopening the DB)." },
+    { "id": "AC-009", "text": "Source code is organized into distinct API, service, repository, model, and analytics layers (not a single file)." },
+    { "id": "AC-010", "text": "The full pytest suite executes successfully via `python -m pytest` with zero failures." }
+  ]
+}
+

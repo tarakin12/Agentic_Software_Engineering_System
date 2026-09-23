@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Engineering Task",
+  "type": "object",
+  "required": [
+    "task_id",
+    "title",
+    "description",
+    "assigned_agent",
+    "dependencies",
+    "status",
+    "inputs",
+    "outputs",
+    "validation_criteria",
+    "retry_count"
+  ],
+  "properties": {
+    "task_id": { "type": "string", "pattern": "^TASK-[0-9]{3,}$" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "assigned_agent": {
+      "type": "string",
+      "enum": [
+        "requirement-analyst",
+        "architecture-designer",
+        "task-planner",
+        "code-engineer",
+        "test-engineer",
+        "documentation-engineer",
+        "validation-engineer"
+      ]
+    },
+    "dependencies": { "type": "array", "items": { "type": "string" } },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "READY",
+        "RUNNING",
+        "BLOCKED",
+        "FAILED",
+        "NEEDS_REWORK",
+        "COMPLETED",
+        "APPROVED"
+      ]
+    },
+    "inputs": { "type": "array", "items": { "type": "string" } },
+    "outputs": { "type": "array", "items": { "type": "string" } },
+    "validation_criteria": { "type": "array", "items": { "type": "string" } },
+    "retry_count": { "type": "integer", "minimum": 0, "maximum": 2 }
+  }
+}
+

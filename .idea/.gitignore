@@ -1,0 +1,34 @@
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# IntelliJ local files
+/shelf/
+/workspace.xml
+/httpRequests/
+/queries/
+/dataSources/
+/dataSources.local.xml
+/dataSources.gilocal.xml
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Build output
+target/
+build/
+out/
+
+# Logs
+*.log
+
+# Node.js
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
